@@ -8,7 +8,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.optimizers import SGD
 from tensorflow.keras.layers import Lambda
 import tensorflow.keras.backend as K
-from instancenormalization import InstanceNormalization
+import instancenormalization
 
 
 
@@ -82,33 +82,30 @@ def attention_block_2d(x, g, inter_channel, data_format='channels_last'):
 def att_unet(img_w, img_h, data_format='channels_last'):
     inputs = Input((img_w, img_h, 3))
     x = inputs
-    depth = 3
+    depth = 4
     features = 32
     skips = []
     for i in range(depth):
         x = Conv2D(features, 3, activation=LeakyReLU(), padding='same')(x)
-        x = Dropout(0.2)(x)
-        x = InstanceNormalization()(x)
+        x = instancenormalization.InstanceNormalization()(x)
         x = Conv2D(features, 3, activation=LeakyReLU(), padding='same')(x)
-        x = InstanceNormalization()(x)
+        x = instancenormalization.InstanceNormalization()(x)
         skips.append(x)
         x = MaxPooling2D(2)(x)
         features = features * 2
 
     x = Conv2D(features, (3, 3), activation=LeakyReLU(), padding='same', data_format=data_format)(x)
-    x = Dropout(0.2)(x)
-    x = InstanceNormalization()(x)
+    x = instancenormalization.InstanceNormalization()(x)
     x = Conv2D(features, (3, 3), activation=LeakyReLU(), padding='same', data_format=data_format)(x)
-    x = InstanceNormalization()(x)
+    x = instancenormalization.InstanceNormalization()(x)
 
     for i in reversed(range(depth)):
         features = features // 2
         x = attention_up_and_concate(x, skips[i], data_format=data_format)
         x = Conv2D(features, (3, 3), activation=LeakyReLU(), padding='same', data_format=data_format)(x)
-        x = Dropout(0.2)(x)
-        x = InstanceNormalization()(x)
+        x = instancenormalization.InstanceNormalization()(x)
         x = Conv2D(features, (3, 3), activation=LeakyReLU(), padding='same', data_format=data_format)(x)
-        x = InstanceNormalization()(x)
+        x = instancenormalization.InstanceNormalization()(x)
 
     conv6 = Conv2D(3, (1, 1), padding='same', data_format=data_format)(x)
     conv7 = Activation('tanh')(conv6)
@@ -116,6 +113,7 @@ def att_unet(img_w, img_h, data_format='channels_last'):
 
     #model.compile(optimizer=Adam(lr=1e-5), loss=[focal_loss()], metrics=['accuracy', dice_coef])
     return model
+
 
 
 # %%
