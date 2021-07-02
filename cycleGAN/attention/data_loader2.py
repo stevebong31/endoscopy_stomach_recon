@@ -34,11 +34,7 @@ def image_aug_batch(img):
     iaa.MultiplyAndAddToBrightness(mul=(0.9, 1.1), add=(-10, 10)),
     iaa.MotionBlur(k=3, angle=[-45, 45]),
     iaa.Fliplr(0.5),
-    iaa.Flipud(0.5),
-    iaa.Affine(
-        translate_px={"x": 10, "y": 10},
-        scale=(0.90, 1.1),
-        rotate=(-5, 5), mode='edge')])
+    iaa.Flipud(0.5)])
     images_aug = seq(images = img)
     return images_aug
 
